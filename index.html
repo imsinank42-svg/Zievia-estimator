@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZIEVIA | Premium Contractor Estimator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#cca76a',
+                        dark: '#0a0a0a',
+                        panel: '#141414'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cca76a; }
+    </style>
+</head>
+<body class="bg-dark text-gray-200 font-sans p-4 md:p-8 min-h-screen">
+    
+    <!-- Header -->
+    <header class="flex justify-between items-center border-b border-gold/30 pb-6 mb-10 max-w-6xl mx-auto">
+        <div class="flex items-center gap-4">
+            <!-- Z Logo Symbol -->
+            <div class="w-12 h-12 border-2 border-gold rounded-full flex items-center justify-center text-gold font-bold text-2xl">
+                Z
+            </div>
+            <h1 class="text-2xl tracking-widest text-gold uppercase hidden md:block">Zievia</h1>
+        </div>
+        <nav class="flex gap-4 md:gap-6 text-xs md:text-sm tracking-wider">
+            <button class="text-gold border-b border-gold pb-1">Estimator</button>
+            <button class="hover:text-white transition pb-1">3D Preview</button>
+            <button class="hover:text-white transition pb-1">Projects</button>
+        </nav>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        
+        <!-- Calculator Input Panel -->
+        <div class="lg:col-span-2 bg-panel border border-gray-800 p-6 md:p-8 rounded-sm">
+            <h2 class="text-xl text-white mb-6 uppercase tracking-wide">Project Estimation Engine</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-xs text-gray-500 uppercase mb-2">Total Surface Area (Sq.Ft)</label>
+                    <input 
+                        type="number" 
+                        id="sqft"
+                        oninput="calculate()"
+                        class="w-full bg-black border border-gray-800 text-white p-3 focus:outline-none focus:border-gold transition"
+                        placeholder="e.g. 1500"
+                    />
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 uppercase mb-2">Current Wall Condition</label>
+                    <select 
+                        id="condition"
+                        onchange="calculate()"
+                        class="w-full bg-black border border-gray-800 text-white p-3 focus:outline-none focus:border-gold transition appearance-none"
+                    >
+                        <option value="ready">Ready Wall (Paint Only)</option>
+                        <option value="plaster">Bare Plaster (Needs Primer)</option>
+                        <option value="painted">Already Painted (Needs Putty + Primer)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-xs text-gray-500 uppercase mb-2">Target Finish</label>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button 
+                        id="btn-standard"
+                        onclick="setFinish('standard')"
+                        class="flex-1 py-3 border border-gray-800 text-gray-500 transition uppercase text-sm hover:border-gold/50"
+                    >
+                        Standard Emulsion
+                    </button>
+                    <button 
+                        id="btn-premium"
+                        onclick="setFinish('premium')"
+                        class="flex-1 py-3 border border-gold text-gold bg-gold/10 transition uppercase text-sm"
+                    >
+                        Luxury Finish
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-gray-800">
+                <p class="text-xs text-gray-500">Note: This is a private-use tool. Database values for Asian Paints and Berger Paints coverage are currently set to standard industry averages and can be adjusted in the backend.</p>
+            </div>
+        </div>
+
+        <!-- Live Estimate Output Panel -->
+        <div class="bg-black border border-gold/40 p-6 md:p-8 rounded-sm flex flex-col justify-between shadow-[0_0_15px_rgba(204,167,106,0.1)]">
+            <div>
+                <h3 class="text-sm text-gold uppercase tracking-wider mb-6 flex items-center justify-between">
+                    <span>Live Quotation</span>
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                </h3>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex justify-between text-sm items-start gap-4">
+                        <span class="text-gray-400 whitespace-nowrap">Material Req:</span>
+                        <span id="breakdown" class="text-right text-xs text-gray-300">-</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Est. Material Cost:</span>
+                        <span id="mat-cost" class="text-white">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Contractor Labour:</span>
+                        <span id="lab-cost" class="text-white">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-end border-t border-gray-800 pt-4 mb-6">
+                    <span class="text-gray-400 uppercase text-xs">Total Estimate</span>
+                    <span id="total-cost" class="text-3xl text-white font-light">₹0.00</span>
+                </div>
+                
+                <button class="w-full bg-gold text-black py-3 uppercase text-sm font-semibold tracking-wider hover:bg-[#b59255] transition">
+                    Generate PDF Proposal
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Database simulation (can be replaced with real backend API calls later)
+        const db = {
+            coverage: { primer: 120, putty: 15, paint: 100 }, // sqft per litre/kg
+            prices: { primer: 150, putty: 40, paint: 450 }, // price per litre/kg
+            labour: { standard: 12, premium: 25 } // price per sqft
+        };
+
+        let finishType = 'premium'; // Default
+
+        function setFinish(type) {
+            finishType = type;
+            
+            const btnStandard = document.getElementById('btn-standard');
+            const btnPremium = document.getElementById('btn-premium');
+
+            if (type === 'standard') {
+                btnStandard.className = 'flex-1 py-3 border border-gold text-gold bg-gold/10 transition uppercase text-sm';
+                btnPremium.className = 'flex-1 py-3 border border-gray-800 text-gray-500 transition uppercase text-sm hover:border-gold/50';
+            } else {
+                btnStandard.className = 'flex-1 py-3 border border-gray-800 text-gray-500 transition uppercase text-sm hover:border-gold/50';
+                btnPremium.className = 'flex-1 py-3 border border-gold text-gold bg-gold/10 transition uppercase text-sm';
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const sqftInput = document.getElementById('sqft').value;
+            const sqft = parseFloat(sqftInput) || 0;
+            const condition = document.getElementById('condition').value;
+            
+            let materialCost = 0;
+            let labourCost = sqft * db.labour[finishType];
+            let details = [];
+
+            if (sqft > 0) {
+                if (condition === 'plaster') {
+                    const primerLitres = (sqft / db.coverage.primer).toFixed(2);
+                    materialCost += primerLitres * db.prices.primer;
+                    details.push(`${primerLitres}L Primer`);
+                } else if (condition === 'painted') {
+                    const puttyKg = (sqft / db.coverage.putty).toFixed(2);
+                    const primerLitres = (sqft / db.coverage.primer).toFixed(2);
+                    materialCost += (puttyKg * db.prices.putty) + (primerLitres * db.prices.primer);
+                    details.push(`${puttyKg}kg Putty<br/>${primerLitres}L Primer`);
+                }
+                
+                // All walls need topcoat paint
+                const paintLitres = (sqft / db.coverage.paint).toFixed(2);
+                materialCost += paintLitres * db.prices.paint;
+                details.push(`${paintLitres}L Emulsion`);
+            }
+
+            // Update UI safely
+            document.getElementById('breakdown').innerHTML = details.length > 0 ? details.join('<br/>+ ') : '-';
+            
+            // Format numbers nicely
+            document.getElementById('mat-cost').innerText = '₹' + materialCost.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('lab-cost').innerText = '₹' + labourCost.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('total-cost').innerText = '₹' + (materialCost + labourCost).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        // Run once on load to initialize
+        window.onload = calculate;
+    </script>
+</body>
+</html>
